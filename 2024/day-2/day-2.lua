@@ -11,6 +11,23 @@ end
 
 print("The input file '" .. filename .. "' contains " .. #list .. " lines")
 
+local function remove_index(line, index)
+    if index == 0 then
+        return line
+    end
+
+    local i = 0
+    local new_line = ""
+    for number in string.gmatch(line, "%d+") do
+        i = i + 1
+        if i ~= index then
+            new_line = new_line .. " " .. number
+        end
+    end
+    print("old: " .. line .. " new: " .. new_line .. "(" .. index .. ")")
+    return new_line
+end
+
 local function is_line_safe(line)
     local previous
     local trend
@@ -47,12 +64,26 @@ local function is_line_safe(line)
     return true
 end
 
-local safe_reports = {}
+local function is_report_safe(line)
+    local nof_items = 0
+    for _ in string.gmatch(line, "%d+") do
+        nof_items = nof_items + 1
+    end
 
+    for index = 0, nof_items do
+        local new_line = remove_index(line, index)
+        if is_line_safe(new_line) then
+            return true
+        end
+    end
+    return false
+end
+
+local safe_reports = 0
 for _, line in pairs(list) do
-    if is_line_safe(line) then
-        safe_reports[#safe_reports + 1] = line
+    if is_report_safe(line) then
+        safe_reports = safe_reports + 1
     end
 end
 
-print("There are " .. #safe_reports .. " safe reports")
+print("There are " .. safe_reports .. " safe reports")
