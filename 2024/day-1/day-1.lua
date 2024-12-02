@@ -60,7 +60,6 @@ print("The total distance is " .. total_distance)
 
 -- Create a similarity table
 local similarities = {}
-local right_pos = 1
 
 for i = 1, nof_lines do
     -- Take the item in the left list and find the position of the first match in the
