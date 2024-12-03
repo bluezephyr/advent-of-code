@@ -11,40 +11,37 @@ end
 
 print("The input file '" .. filename .. "' contains " .. #input .. " lines")
 
-local function parse_instructions(line)
-    local nof_instructions = 0
-    local instructions = {}
+local function parse_instructions(line, program)
     for instruction in string.gmatch(line, "%mul%(%d+,%d+%)") do
-        nof_instructions = nof_instructions + 1
-        local op = string.gmatch(instruction, "%mul")()
-        local left = string.gmatch(instruction, "%((%d+)")()
-        local right = tonumber(string.gmatch(instruction, "(%d+)%)")())
-        local instr = {}
-        instr.op = op
-        instr.left = left
-        instr.right = right
-        instructions[nof_instructions] = instr
-        print("Instruction: " .. instr.op .. "(" .. instr.left .. "," .. instr.right .. ")")
+        program.len = program.len + 1
+        local instr = {
+            op = string.gmatch(instruction, "%mul")(),
+            left = tonumber(string.gmatch(instruction, "%((%d+)")()),
+            right = tonumber(string.gmatch(instruction, "(%d+)%)")())
+        }
+        program[program.len] = instr
+        -- print("Instruction: " .. instr.op .. "(" .. instr.left .. "," .. instr.right .. ")")
     end
-    return instructions
 end
 
-local product = 0
-local instructions = {}
-for _, line in pairs(input) do
-    instructions = parse_instructions(line)
-    for _, instruction in pairs(instructions) do
+local function exec(instruction, env)
+    if instruction.op == "mul" then
         local result = instruction.left * instruction.right
-        product = product + result
+        env.product = env.product + result
     end
 end
 
-print("Instructions: " .. #instructions)
+-- Parse program
+local program = { len = 0, instructions = {} }
+for _, line in pairs(input) do
+    parse_instructions(line, program)
+end
+print("Instructions: " .. program.len)
 
--- local product = 0
--- for _, instruction in pairs(instructions) do
---     local result = instruction.left * instruction.right
---     product = product + result
--- end
+-- Execute program
+local env = { product = 0 }
+for i = 1, program.len do
+    exec(program[i], env)
+end
 
-print("The total product is " .. product)
+print("The total product is " .. env.product)
