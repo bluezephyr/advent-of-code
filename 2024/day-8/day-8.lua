@@ -117,7 +117,7 @@ local function find_antennas(map)
     return antennas
 end
 
-local function find_antinode_pairs(pos1, pos2)
+local function find_antinode_pairs(map, pos1, pos2)
     local d = distance(pos1, pos2)
     -- print(pos1.x, pos1.y, pos2.x, pos2.y)
     local node1 = { x = pos1.x - d.x, y = pos1.y - d.y }
@@ -125,12 +125,29 @@ local function find_antinode_pairs(pos1, pos2)
     return { node1, node2 }
 end
 
-local function find_all_antinodes(antennas, finder)
+local function find_antinode_lines(map, pos1, pos2)
+    local d = distance(pos1, pos2)
+    local line = {}
+    local m = 0
+    while true do
+        local node1 = { x = pos1.x - m * d.x, y = pos1.y - m * d.y }
+        local node2 = { x = pos2.x + m * d.x, y = pos2.y + m * d.y }
+        line[#line+1] = node1
+        line[#line+1] = node2
+        m = m + 1
+        if not (map.on_map(node1.x, node1.y) or map.on_map(node2.x, node2.y)) then
+            break
+        end
+    end
+    return line
+end
+
+local function find_all_antinodes(antennas, map, finder)
     local antinodes = {}
     for _, antenna in pairs(antennas) do
         for i = 1, #antenna do
             for j = i + 1, #antenna do
-                append(antinodes, finder(antenna[i], antenna[j]))
+                append(antinodes, finder(map, antenna[i], antenna[j]))
             end
         end
     end
@@ -145,7 +162,24 @@ local function part_1(lines)
 
     antenna_map.print()
     local antennas = find_antennas(antenna_map)
-    local nodes = find_all_antinodes(antennas, find_antinode_pairs)
+    local nodes = find_all_antinodes(antennas, map, find_antinode_pairs)
+    for _, node in pairs(nodes) do
+        node_map.set(node.x, node.y, "#")
+    end
+    print()
+    node_map.print()
+    print("The map contains " .. node_map.count("#") .. " antinodes")
+end
+
+local function part_2(lines)
+    local antenna_map = create_map()
+    local node_map = create_map()
+    antenna_map.add(lines)
+    node_map.clear(antenna_map.x_max, antenna_map.y_max)
+
+    antenna_map.print()
+    local antennas = find_antennas(antenna_map)
+    local nodes = find_all_antinodes(antennas, antenna_map, find_antinode_lines)
     for _, node in pairs(nodes) do
         node_map.set(node.x, node.y, "#")
     end
@@ -160,4 +194,5 @@ local filename = "input1.txt"
 local input = read_input(filename)
 print("The input file '" .. filename .. "' contains " .. #input .. " lines")
 
-part_1(input)
+-- part_1(input)
+part_2(input)
